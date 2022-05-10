@@ -1,0 +1,29 @@
+FROM alpine:3.15
+
+# upgrade system / install apache
+RUN apk upgrade --no-cache \
+        && apk add --no-cache \
+        apache2 apache2-utils apache2-proxy doas \
+        s6 setpriv \
+        # cleanup, do not use default apache configuration files but preserve them as examples
+        && for x in /etc/apache2/conf.d/*.conf; do mv $x $x.bak; done \
+        # disable mpm_prefork module, we use mpm_event
+        && sed -i 's/^LoadModule mpm_prefork_module/#LoadModule mpm_prefork_module/' /etc/apache2/httpd.conf \
+        # disable document root, we define it in the vhost.conf
+        && sed -i 's/^DocumentRoot/#DocumentRoot/' /etc/apache2/httpd.conf \
+        # we will run with our custom structure under /var/www/, cleanup existing files
+        && rm -rf /var/www \
+        # configure doas for cron
+        && echo 'permit nopass app as root cmd /usr/sbin/crond' >>/etc/doas.d/doas.conf
+
+# add the custom configurations
+COPY rootfs/ /
+
+VOLUME /var/www/htdocs
+VOLUME /var/www/logs
+VOLUME /var/www/tmp
+
+# server defaults to port 80
+EXPOSE 8080
+
+CMD [ "/entrypoint.sh" ]

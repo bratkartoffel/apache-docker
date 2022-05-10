@@ -1,0 +1,84 @@
+#!/bin/ash
+
+# exit when any command fails
+set -o errexit -o pipefail
+
+# configuration
+readonly APP_HOMEDIR=/var/www/htdocs
+readonly APP_LOGDIR=/var/www/logs
+readonly APP_TMPDIR=/var/www/tmp
+
+: "${APP_UMASK:=027}"
+: "${APP_UID:=508}"
+: "${APP_GID:=330}"
+: "${APP_USER:=app}"
+: "${APP_GROUP:=app}"
+: "${APP_APACHE_CONF_DIR:=/etc/apache2}"
+: "${APP_PHP_CONF_DIR:=/etc/php}"
+: "${SMTPHOST:=mailhost}"
+: "${SERVERNAME:=localhost}"
+
+export APP_HOMEDIR APP_LOGDIR APP_TMPDIR SMTPHOST SERVERNAME
+
+# invoked as root, add user and prepare container
+if [ "$(id -u)" -eq 0 ]; then
+  echo ">> removing default user and group ($APP_USER)"
+  if getent passwd "$APP_USER" >/dev/null; then deluser "$APP_USER"; fi
+  if getent group "$APP_GROUP" >/dev/null; then delgroup "$APP_GROUP"; fi
+
+  echo ">> adding unprivileged user (uid: $APP_UID / gid: $APP_GID)"
+  addgroup -g "$APP_GID" "$APP_GROUP"
+  adduser -HD -h "$APP_HOMEDIR" -s /sbin/nologin -G "$APP_GROUP" -u "$APP_UID" -k /dev/null "$APP_USER"
+
+  echo ">> installing configuration"
+  if [ -x /usr/bin/php-fpm5 ]; then
+    cp -rv $APP_PHP_CONF_DIR/*  /etc/php5
+    APP_PHP_CONF_DIR=/etc/php5
+  elif [ -x /usr/sbin/php-fpm7 ]; then
+    cp -rv $APP_PHP_CONF_DIR/*  /etc/php7
+    APP_PHP_CONF_DIR=/etc/php7
+  elif [ -x /usr/sbin/php-fpm8 ]; then
+    cp -rv $APP_PHP_CONF_DIR/*  /etc/php8
+    APP_PHP_CONF_DIR=/etc/php8
+  else
+    echo ">>> no supported version of php found"
+    rm -rv /etc/s6/php-fpm
+  fi
+
+  echo ">> fixing permissions"
+  install -dm 2750 -o "$APP_UID" -g "$APP_GID"   "$APP_HOMEDIR"
+  install -dm 0770 -o root -g "$APP_GID"         "$APP_LOGDIR"
+  install -dm 0770 -o "$APP_UID" -g "$APP_GID"   "$APP_TMPDIR"
+  install -dm 0750 -o "$APP_UID" -g "$APP_GID"   "$APP_APACHE_CONF_DIR"
+  install -dm 0750 -o "$APP_UID" -g "$APP_GID"   "$APP_PHP_CONF_DIR"
+  install -dm 0750 -o "$APP_UID" -g "$APP_GID"   /run/app
+  chown -R "$APP_UID":"$APP_GID" "$APP_APACHE_CONF_DIR" "$APP_PHP_CONF_DIR" "$APP_LOGDIR" "$APP_TMPDIR" /etc/s6
+
+  echo ">> create link for apache2 modules"
+  ln -sfTv /usr/lib/apache2 /var/www/modules
+
+  echo ">> create link for syslog redirection"
+  install -dm 0750 -o "$APP_USER" -g "$APP_GROUP" /run/syslogd
+  ln -sfv /run/syslogd/syslogd.sock /dev/log
+
+  # WORKAROUND for `setpriv: libcap-ng is too old for "all" caps`, previously "-all" was used here
+  # create a list to drop all capabilities supported by current kernel
+  # taken from https://github.com/SinusBot/docker/commit/1af523e7bd79ed91d4fd0304aea13f34f2238b2f
+  cap_prefix="-cap_"
+  caps="$cap_prefix$(seq -s ",$cap_prefix" 0 $(cat /proc/sys/kernel/cap_last_cap))"
+
+  # drop privileges and re-execute this script unprivileged
+  echo ">> dropping privileges"
+  export HOME="$APP_HOMEDIR" USER="$APP_USER" LOGNAME="$APP_USER" PATH="/usr/local/bin:/bin:/usr/bin"
+  exec /usr/bin/setpriv --reuid="$APP_USER" --regid="$APP_GROUP" --init-groups --inh-caps=$caps "$0" "$@"
+fi
+
+# tighten umask for newly created files / dirs
+echo ">> changing umask to $APP_UMASK"
+umask "$APP_UMASK"
+
+echo ">> starting application"
+exec /bin/s6-svscan /etc/s6
+
+# vim: set ft=bash ts=2 sts=2 expandtab:
+

@@ -1,0 +1,26 @@
+#!/bin/ash
+set -e
+
+readonly SOCK_FILE="/run/app/php-fpm.sock"
+readonly PID_FILE="/run/app/php-fpm.pid"
+
+[[ -e "$SOCK_FILE" ]] && rm -v "$SOCK_FILE"
+[[ -e "$PID_FILE" ]] && rm -v "$PID_FILE"
+
+if [ -x /usr/bin/php-fpm5 ]; then
+  version=5
+  exe=/usr/bin/php-fpm$version
+elif [ -x /usr/sbin/php-fpm7 ]; then
+  version=7
+  exe=/usr/sbin/php-fpm$version
+elif [ -x /usr/sbin/php-fpm8 ]; then
+  version=8
+  exe=/usr/sbin/php-fpm$version
+fi
+
+export CONF_DIR=/etc/php$version
+touch $APP_LOGDIR/php.log
+exec $exe --nodaemonize --fpm-config /etc/php$version/php-fpm.conf --pid "$PID_FILE"
+
+# vim: set ft=bash ts=2 sts=2 expandtab:
+

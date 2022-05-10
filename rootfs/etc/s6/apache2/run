@@ -1,0 +1,17 @@
+#!/bin/ash
+set -e
+
+readonly PID_FILE="/run/app/httpd.pid"
+[[ -e "$PID_FILE" ]] && rm -v "$PID_FILE"
+
+# set option when running with PHP
+if /sbin/apk --no-network info 2>/dev/null | grep -q php; then
+   args=-DWithPhp
+fi
+
+touch $APP_LOGDIR/error.log
+touch $APP_LOGDIR/access.log
+exec /usr/sbin/httpd -DFOREGROUND -DWithSsl -DWithHeaders $args
+
+# vim: set ft=bash ts=2 sts=2 expandtab:
+
