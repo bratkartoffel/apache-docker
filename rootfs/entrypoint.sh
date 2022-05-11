@@ -20,6 +20,25 @@ readonly APP_TMPDIR=/var/www/tmp
 
 export APP_HOMEDIR APP_LOGDIR APP_TMPDIR SMTPHOST SERVERNAME
 
+copyAndApplyVariables() {
+  local source_dir="$1/"
+  local target_dir="$2"
+
+  for source_file in $( find "$source_dir" -type f ); do
+    local target_file="$target_dir/${source_file/$source_dir/}"
+    local dest_dir="$(dirname $target_file)"
+    if [[ ! -d "$dest_dir" ]]; then
+      mkdir -v $dest_dir
+    fi
+
+    echo ">>> $source_file -> $target_file"
+    sed -e "s@{{APP_LOGDIR}}@$APP_LOGDIR@" \
+      -e "s@{{APP_TMPDIR}}@$APP_TMPDIR@" \
+      -e "s@{{APP_HOMEDIR}}@$APP_HOMEDIR@" \
+      "$source_file" >"$target_file"
+  done
+}
+
 # invoked as root, add user and prepare container
 if [ "$(id -u)" -eq 0 ]; then
   echo ">> removing default user and group ($APP_USER)"
@@ -32,13 +51,13 @@ if [ "$(id -u)" -eq 0 ]; then
 
   echo ">> installing configuration"
   if [ -x /usr/bin/php-fpm5 ]; then
-    cp -rv $APP_PHP_CONF_DIR/*  /etc/php5
+    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php5
     APP_PHP_CONF_DIR=/etc/php5
   elif [ -x /usr/sbin/php-fpm7 ]; then
-    cp -rv $APP_PHP_CONF_DIR/*  /etc/php7
+    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php7
     APP_PHP_CONF_DIR=/etc/php7
   elif [ -x /usr/sbin/php-fpm8 ]; then
-    cp -rv $APP_PHP_CONF_DIR/*  /etc/php8
+    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php8
     APP_PHP_CONF_DIR=/etc/php8
   else
     echo ">>> no supported version of php found"
