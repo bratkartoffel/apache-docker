@@ -27,7 +27,7 @@ for vers in $versions; do
         .
 done
 
-for i in $(docker images | grep "bratkartoffel/web:" | awk '{print $1}'); do
+for i in $(docker images | grep -v '<none>' | grep -E '^bratkartoffel/web[[:space:]]+' | awk '{print $1 ":" $2}'); do
     docker push $i
 done
 
