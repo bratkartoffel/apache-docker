@@ -25,7 +25,7 @@ copyAndApplyVariables() {
   local target_dir="$2"
 
   for source_file in $( find "$source_dir" -type f ); do
-    local target_file="$target_dir/${source_file/$source_dir/}"
+    local target_file="$target_dir/${source_file:${#source_dir}}"
     local dest_dir="$(dirname $target_file)"
     if [[ ! -d "$dest_dir" ]]; then
       mkdir -v $dest_dir
@@ -74,10 +74,12 @@ if [ "$(id -u)" -eq 0 ]; then
   chown -R "$APP_UID":"$APP_GID" "$APP_APACHE_CONF_DIR" "$APP_PHP_CONF_DIR" "$APP_LOGDIR" "$APP_TMPDIR" /etc/s6
 
   echo ">> create link for apache2 modules"
-  ln -sfTv /usr/lib/apache2 /var/www/modules
+  [[ -h /var/www/modules ]] && rm -v /var/www/modules
+  ln -sfv /usr/lib/apache2 /var/www/modules
 
   echo ">> create link for syslog redirection"
   install -dm 0750 -o "$APP_USER" -g "$APP_GROUP" /run/syslogd
+  [[ -h /dev/log ]] && rm -v /dev/log
   ln -sfv /run/syslogd/syslogd.sock /dev/log
 
   # WORKAROUND for `setpriv: libcap-ng is too old for "all" caps`, previously "-all" was used here

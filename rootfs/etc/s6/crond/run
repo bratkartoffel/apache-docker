@@ -1,3 +1,8 @@
 #!/bin/sh
 
-exec /usr/bin/doas /usr/sbin/crond -f -L /dev/stdout
+if [[ -x /usr/bin/doas ]]; then
+	exe=/usr/bin/doas
+else
+	exe=/usr/bin/sudo
+fi
+exec $exe /usr/sbin/crond -f -L /dev/stdout
