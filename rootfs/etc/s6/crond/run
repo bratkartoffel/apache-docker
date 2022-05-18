@@ -5,4 +5,4 @@ if [[ -x /usr/bin/doas ]]; then
 else
 	exe=/usr/bin/sudo
 fi
-exec $exe /usr/sbin/crond -f -L /dev/stdout
+exec $exe /usr/sbin/crond -f

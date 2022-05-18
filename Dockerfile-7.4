@@ -3,7 +3,7 @@ FROM alpine:3.15
 # upgrade system / install apache
 RUN apk upgrade --no-cache \
         && apk add --no-cache \
-        apache2 apache2-brotli apache2-utils apache2-proxy doas \
+        apache2 apache2-brotli apache2-brotli apache2-utils apache2-proxy doas \
         s6 setpriv \
         # cleanup, do not use default apache configuration files but preserve them as examples
         && for x in /etc/apache2/conf.d/*.conf; do mv $x $x.bak; done \
