@@ -7,14 +7,14 @@ readonly PID_FILE="/run/app/php-fpm.pid"
 [[ -e "$SOCK_FILE" ]] && rm -v "$SOCK_FILE"
 [[ -e "$PID_FILE" ]] && rm -v "$PID_FILE"
 
-if [ -x /usr/bin/php-fpm5 ]; then
-  version=5
-  exe=/usr/bin/php-fpm$version
-elif [ -x /usr/sbin/php-fpm7 ]; then
+if [ -x /usr/sbin/php-fpm7 ]; then
   version=7
   exe=/usr/sbin/php-fpm$version
 elif [ -x /usr/sbin/php-fpm8 ]; then
   version=8
+  exe=/usr/sbin/php-fpm$version
+elif [ -x /usr/sbin/php-fpm81 ]; then
+  version=81
   exe=/usr/sbin/php-fpm$version
 fi
 

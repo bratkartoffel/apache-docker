@@ -2,7 +2,7 @@
 set -e
 
 # the images to build (only build supported images by alpine, older images won't change anymore)
-readonly versions="nophp 7.4 8.0"
+readonly versions="nophp 7.4 8.0 8.1"
 
 # use buildkit
 export DOCKER_BUILDKIT=1
