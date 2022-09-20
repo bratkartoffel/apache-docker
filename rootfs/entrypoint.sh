@@ -15,7 +15,7 @@ readonly APP_TMPDIR=/var/www/tmp
 : "${APP_GROUP:=app}"
 : "${APP_APACHE_CONF_DIR:=/etc/apache2}"
 : "${APP_PHP_CONF_DIR:=/etc/php}"
-: "${SMTPHOST:=mailhost}"
+: "${SMTPHOST:=localhost}"
 : "${SERVERNAME:=localhost}"
 
 export APP_HOMEDIR APP_LOGDIR APP_TMPDIR SMTPHOST SERVERNAME
