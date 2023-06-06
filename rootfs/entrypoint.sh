@@ -59,6 +59,9 @@ if [ "$(id -u)" -eq 0 ]; then
   elif [ -x /usr/sbin/php-fpm81 ]; then
     copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php81
     APP_PHP_CONF_DIR=/etc/php81
+  elif [ -x /usr/sbin/php-fpm82 ]; then
+    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php82
+    APP_PHP_CONF_DIR=/etc/php82
   else
     echo ">>> no supported version of php found"
     rm -rv /etc/s6/php-fpm

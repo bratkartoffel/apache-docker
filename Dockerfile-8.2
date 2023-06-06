@@ -16,6 +16,40 @@ RUN apk upgrade --no-cache \
         # configure doas for cron
         && echo 'permit nopass app as root cmd /usr/sbin/crond' >>/etc/doas.d/doas.conf
 
+# install php with modules
+RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing \
+        php82-cli \
+        php82-fpm \
+        php82-ctype \
+        php82-curl \
+        php82-exif \
+        php82-fileinfo \
+        php82-gd \
+        php82-gmp \
+        php82-iconv \
+        php82-imap \
+        php82-intl \
+        php82-json \
+        php82-mbstring \
+        php82-mysqli \
+        php82-mysqlnd \
+        php82-pgsql \
+        php82-opcache \
+        php82-openssl \
+        php82-pecl-imagick \
+        php82-pecl-mcrypt \
+        php82-pdo_mysql \
+        php82-pdo_pgsql \
+        php82-simplexml \
+        php82-session \
+        php82-soap \
+        php82-sqlite3 \
+        php82-xml \
+        php82-xmlreader \
+        php82-zip \
+        php82-zlib \
+    && (if [ -d /etc/php*/php-fpm.d/ ]; then rm -v /etc/php*/php-fpm.d/*; fi)
+
 # add the custom configurations
 COPY rootfs/ /
 
