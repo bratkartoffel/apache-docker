@@ -17,7 +17,7 @@ RUN apk upgrade --no-cache \
         && echo 'permit nopass app as root cmd /usr/sbin/crond' >>/etc/doas.d/doas.conf
 
 # install php with modules
-RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing \
+RUN apk add --no-cache \
         php82-cli \
         php82-fpm \
         php82-ctype \
@@ -37,7 +37,6 @@ RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing \
         php82-opcache \
         php82-openssl \
         php82-pecl-imagick \
-        php82-pecl-mcrypt \
         php82-pdo_mysql \
         php82-pdo_pgsql \
         php82-simplexml \
