@@ -50,13 +50,7 @@ if [ "$(id -u)" -eq 0 ]; then
   adduser -HD -h "$APP_HOMEDIR" -s /sbin/nologin -G "$APP_GROUP" -u "$APP_UID" -k /dev/null "$APP_USER"
 
   echo ">> installing configuration"
-  if [ -x /usr/sbin/php-fpm7 ]; then
-    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php7
-    APP_PHP_CONF_DIR=/etc/php7
-  elif [ -x /usr/sbin/php-fpm8 ]; then
-    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php8
-    APP_PHP_CONF_DIR=/etc/php8
-  elif [ -x /usr/sbin/php-fpm81 ]; then
+  if [ -x /usr/sbin/php-fpm81 ]; then
     copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php81
     APP_PHP_CONF_DIR=/etc/php81
   elif [ -x /usr/sbin/php-fpm82 ]; then
