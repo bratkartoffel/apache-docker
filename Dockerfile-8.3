@@ -1,0 +1,62 @@
+FROM alpine:3.19
+
+# upgrade system / install apache
+RUN apk upgrade --no-cache \
+        && apk add --no-cache \
+        apache2 apache2-brotli apache2-utils apache2-proxy doas \
+        s6 setpriv \
+        # cleanup, do not use default apache configuration files but preserve them as examples
+        && for x in /etc/apache2/conf.d/*.conf; do mv $x $x.bak; done \
+        # disable mpm_prefork module, we use mpm_event
+        && sed -i 's/^LoadModule mpm_prefork_module/#LoadModule mpm_prefork_module/' /etc/apache2/httpd.conf \
+        # disable document root, we define it in the vhost.conf
+        && sed -i 's/^DocumentRoot/#DocumentRoot/' /etc/apache2/httpd.conf \
+        # we will run with our custom structure under /var/www/, cleanup existing files
+        && rm -rf /var/www \
+        # configure doas for cron
+        && echo 'permit nopass app as root cmd /usr/sbin/crond' >>/etc/doas.d/doas.conf
+
+# install php with modules
+RUN apk add --no-cache \
+        php83-cli \
+        php83-fpm \
+        php83-ctype \
+        php83-curl \
+        php83-exif \
+        php83-fileinfo \
+        php83-gd \
+        php83-gmp \
+        php83-iconv \
+        php83-imap \
+        php83-intl \
+        php83-json \
+        php83-mbstring \
+        php83-mysqli \
+        php83-mysqlnd \
+        php83-pgsql \
+        php83-opcache \
+        php83-openssl \
+        php83-pecl-imagick \
+        php83-pdo_mysql \
+        php83-pdo_pgsql \
+        php83-simplexml \
+        php83-session \
+        php83-soap \
+        php83-sqlite3 \
+        php83-xml \
+        php83-xmlreader \
+        php83-zip \
+        php83-zlib \
+    && (if [ -d /etc/php*/php-fpm.d/ ]; then rm -v /etc/php*/php-fpm.d/*; fi)
+
+# add the custom configurations
+COPY rootfs/ /
+
+VOLUME /var/www/htdocs
+VOLUME /var/www/logs
+VOLUME /var/www/tmp
+
+# server defaults to port 80
+EXPOSE 8080
+
+CMD [ "/entrypoint.sh" ]
