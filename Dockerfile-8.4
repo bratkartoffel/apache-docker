@@ -16,6 +16,40 @@ RUN apk upgrade --no-cache \
         # configure doas for cron
         && echo 'permit nopass app as root cmd /usr/sbin/crond' >>/etc/doas.d/doas.conf
 
+# install php with modules
+RUN apk add --no-cache \
+        php84-cli \
+        php84-fpm \
+        php84-ctype \
+        php84-curl \
+        php84-exif \
+        php84-fileinfo \
+        php84-gd \
+        php84-gmp \
+        php84-iconv \
+        php84-imap \
+        php84-intl \
+        php84-json \
+        php84-mbstring \
+        php84-mysqli \
+        php84-mysqlnd \
+        php84-pgsql \
+        php84-opcache \
+        php84-openssl \
+	php84-pecl-apcu \
+        php84-pecl-imagick \
+        php84-pdo_mysql \
+        php84-pdo_pgsql \
+        php84-simplexml \
+        php84-session \
+        php84-soap \
+        php84-sqlite3 \
+        php84-xml \
+        php84-xmlreader \
+        php84-zip \
+        php84-zlib \
+    && (if [ -d /etc/php*/php-fpm.d/ ]; then rm -v /etc/php*/php-fpm.d/*; fi)
+
 # add the custom configurations
 COPY rootfs/ /
 

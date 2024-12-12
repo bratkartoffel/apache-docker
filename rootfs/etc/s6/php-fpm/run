@@ -13,6 +13,8 @@ elif [ -x /usr/sbin/php-fpm82 ]; then
   version=82
 elif [ -x /usr/sbin/php-fpm83 ]; then
   version=83
+elif [ -x /usr/sbin/php-fpm84 ]; then
+  version=84
 fi
 exe=/usr/sbin/php-fpm$version
 
