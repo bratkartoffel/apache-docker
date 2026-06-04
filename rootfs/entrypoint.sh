@@ -50,20 +50,11 @@ if [ "$(id -u)" -eq 0 ]; then
   adduser -HD -h "$APP_HOMEDIR" -s /sbin/nologin -G "$APP_GROUP" -u "$APP_UID" -k /dev/null "$APP_USER"
 
   echo ">> installing configuration"
-  if [ -x /usr/sbin/php-fpm81 ]; then
-    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php81
-    APP_PHP_CONF_DIR=/etc/php81
-  elif [ -x /usr/sbin/php-fpm82 ]; then
-    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php82
-    APP_PHP_CONF_DIR=/etc/php82
-  elif [ -x /usr/sbin/php-fpm83 ]; then
-    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php83
-    APP_PHP_CONF_DIR=/etc/php83
-  elif [ -x /usr/sbin/php-fpm84 ]; then
-    copyAndApplyVariables $APP_PHP_CONF_DIR /etc/php84
-    APP_PHP_CONF_DIR=/etc/php84
+  if [ -n "$PHP_VERS" ]; then
+    copyAndApplyVariables "$APP_PHP_CONF_DIR" /etc/php$PHP_VERS
+    APP_PHP_CONF_DIR=/etc/php$PHP_VERS
   else
-    echo ">>> no supported version of php found"
+    echo ">>> no installation of php found"
     rm -rv /etc/s6/php-fpm
   fi
 
@@ -93,7 +84,7 @@ if [ "$(id -u)" -eq 0 ]; then
 
   # drop privileges and re-execute this script unprivileged
   echo ">> dropping privileges"
-  export HOME="$APP_HOMEDIR" USER="$APP_USER" LOGNAME="$APP_USER" PATH="/usr/local/bin:/bin:/usr/bin"
+  export HOME="$APP_HOMEDIR" USER="$APP_USER" LOGNAME="$APP_USER" APP_PHP_CONF_DIR="$APP_PHP_CONF_DIR" PATH="/usr/local/bin:/bin:/usr/bin"
   exec /bin/setpriv --reuid="$APP_USER" --regid="$APP_GROUP" --init-groups --inh-caps=$caps "$0" "$@"
 fi
 
@@ -105,4 +96,3 @@ echo ">> starting application"
 exec /usr/bin/s6-svscan /etc/s6
 
 # vim: set ft=bash ts=2 sts=2 expandtab:
-

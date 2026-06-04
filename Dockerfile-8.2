@@ -1,5 +1,7 @@
 FROM alpine:3.22
 
+ENV PHP_VERS=82
+
 # upgrade system / install apache
 RUN apk upgrade --no-cache \
         && apk add --no-cache \
@@ -18,37 +20,37 @@ RUN apk upgrade --no-cache \
 
 # install php with modules
 RUN apk add --no-cache \
-        php82-cli \
-        php82-fpm \
-        php82-ctype \
-        php82-curl \
-        php82-exif \
-        php82-fileinfo \
-        php82-gd \
-        php82-gmp \
-        php82-iconv \
-        php82-imap \
-        php82-intl \
-        php82-json \
-        php82-mbstring \
-        php82-mysqli \
-        php82-mysqlnd \
-        php82-pgsql \
-        php82-opcache \
-        php82-openssl \
-	php82-pecl-apcu \
-        php82-pecl-imagick \
-        php82-pdo_mysql \
-        php82-pdo_pgsql \
-        php82-simplexml \
-        php82-session \
-        php82-soap \
-        php82-sqlite3 \
-        php82-xml \
-        php82-xmlreader \
-        php82-zip \
-        php82-zlib \
-    && (if [ -d /etc/php*/php-fpm.d/ ]; then rm -v /etc/php*/php-fpm.d/*; fi)
+        php${PHP_VERS}-cli \
+        php${PHP_VERS}-fpm \
+        php${PHP_VERS}-ctype \
+        php${PHP_VERS}-curl \
+        php${PHP_VERS}-exif \
+        php${PHP_VERS}-fileinfo \
+        php${PHP_VERS}-gd \
+        php${PHP_VERS}-gmp \
+        php${PHP_VERS}-iconv \
+        php${PHP_VERS}-imap \
+        php${PHP_VERS}-intl \
+        php${PHP_VERS}-json \
+        php${PHP_VERS}-mbstring \
+        php${PHP_VERS}-mysqli \
+        php${PHP_VERS}-mysqlnd \
+        php${PHP_VERS}-pgsql \
+        php${PHP_VERS}-opcache \
+        php${PHP_VERS}-openssl \
+        php${PHP_VERS}-pecl-apcu \
+        php${PHP_VERS}-pecl-imagick \
+        php${PHP_VERS}-pdo_mysql \
+        php${PHP_VERS}-pdo_pgsql \
+        php${PHP_VERS}-simplexml \
+        php${PHP_VERS}-session \
+        php${PHP_VERS}-soap \
+        php${PHP_VERS}-sqlite3 \
+        php${PHP_VERS}-xml \
+        php${PHP_VERS}-xmlreader \
+        php${PHP_VERS}-zip \
+        php${PHP_VERS}-zlib \
+    && rm -v /etc/php${PHP_VERS}/php-fpm.d/*
 
 # add the custom configurations
 COPY rootfs/ /
@@ -61,3 +63,5 @@ VOLUME /var/www/tmp
 EXPOSE 8080
 
 CMD [ "/entrypoint.sh" ]
+
+# vim: set filetype=dockerfile:

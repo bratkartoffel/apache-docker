@@ -1,4 +1,4 @@
-FROM alpine:3.22
+FROM alpine:3.23
 
 # upgrade system / install apache
 RUN apk upgrade --no-cache \
@@ -27,3 +27,5 @@ VOLUME /var/www/tmp
 EXPOSE 8080
 
 CMD [ "/entrypoint.sh" ]
+
+# vim: set filetype=dockerfile:
