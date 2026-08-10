@@ -67,6 +67,10 @@ if [ "$(id -u)" -eq 0 ]; then
   install -dm 0750 -o "$APP_UID" -g "$APP_GID"   /run/app
   chown -R "$APP_UID":"$APP_GID" "$APP_APACHE_CONF_DIR" "$APP_PHP_CONF_DIR" "$APP_LOGDIR" "$APP_TMPDIR" /etc/s6
 
+  echo ">> create link for apache2 modules"
+  [[ -h /var/www/modules ]] && rm -v /var/www/modules
+  ln -sfv /usr/lib/apache2 /var/www/modules
+
   echo ">> create link for syslog redirection"
   install -dm 0750 -o "$APP_USER" -g "$APP_GROUP" /run/syslogd
   [[ -h /dev/log ]] && rm -v /dev/log
